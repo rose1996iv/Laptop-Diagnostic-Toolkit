@@ -16,6 +16,14 @@ class Status(str, Enum):
     CANCELLED = "CANCELLED"
 
 
+class ComparisonStatus(str, Enum):
+    MATCH = "MATCH"
+    MISMATCH = "MISMATCH"
+    PARTIAL = "PARTIAL"
+    UNVERIFIED = "UNVERIFIED"
+    NOT_APPLICABLE = "NOT_APPLICABLE"
+
+
 @dataclass
 class CheckResult:
     name: str
@@ -40,10 +48,19 @@ class ExpectedProfile:
     storage_gb_min: float | None = None
     display_resolution: str | None = None
     refresh_rate_hz_min: float | None = None
+    battery_capacity_wh_min: float | None = None
+    price: float | None = None
+    notes: str | None = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ExpectedProfile":
-        return cls(**{key: value for key, value in data.items() if key in cls.__dataclass_fields__})
+        values = {key: value for key, value in data.items() if key in cls.__dataclass_fields__}
+        for key in ("cpu_contains_any", "gpu_contains_any"):
+            if isinstance(values.get(key), str):
+                values[key] = [values[key]]
+            elif values.get(key) is None:
+                values[key] = []
+        return cls(**values)
 
 
 @dataclass

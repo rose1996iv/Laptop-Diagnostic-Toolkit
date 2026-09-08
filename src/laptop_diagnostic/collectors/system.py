@@ -19,17 +19,20 @@ def _one(value: Any) -> dict[str, Any]:
 
 def collect_system() -> dict[str, Any]:
     """Collect identity and OS information without requiring administrator access."""
-    computer = _one(powershell_json("Get-CimInstance Win32_ComputerSystem | Select Manufacturer,Model,Name | ConvertTo-Json -Compress"))
-    bios = _one(powershell_json("Get-CimInstance Win32_BIOS | Select SerialNumber,SMBIOSBIOSVersion,ReleaseDate | ConvertTo-Json -Compress"))
+    computer = _one(powershell_json("Get-CimInstance Win32_ComputerSystem | Select Manufacturer,Model,Name,SystemSKUNumber | ConvertTo-Json -Compress"))
+    bios = _one(powershell_json("Get-CimInstance Win32_BIOS | Select Manufacturer,SerialNumber,SMBIOSBIOSVersion,ReleaseDate | ConvertTo-Json -Compress"))
+    board = _one(powershell_json("Get-CimInstance Win32_BaseBoard | Select Manufacturer,Product,Version,SerialNumber | ConvertTo-Json -Compress"))
     os_info = _one(powershell_json("Get-CimInstance Win32_OperatingSystem | Select Caption,Version,BuildNumber,OSArchitecture | ConvertTo-Json -Compress"))
-    return {"manufacturer": computer.get("Manufacturer"), "model": computer.get("Model"), "bios": bios.get("SMBIOSBIOSVersion"), "bios_date": bios.get("ReleaseDate"), "serial": bios.get("SerialNumber"), "os": os_info.get("Caption") or platform.platform(), "os_version": os_info.get("Version"), "build": os_info.get("BuildNumber"), "architecture": os_info.get("OSArchitecture") or platform.machine(), "hostname": computer.get("Name") or socket.gethostname(), "uptime_seconds": max(0, time.time() - psutil.boot_time())}
+    secure_boot = powershell_json("try { Confirm-SecureBootUEFI } catch { $false }")
+    tpm = _one(powershell_json("Get-Tpm | Select TpmPresent,TpmReady,ManufacturerIdTxt,ManufacturerVersion | ConvertTo-Json -Compress"))
+    return {"manufacturer": computer.get("Manufacturer"), "model": computer.get("Model"), "sku": computer.get("SystemSKUNumber"), "bios_vendor": bios.get("Manufacturer"), "bios": bios.get("SMBIOSBIOSVersion"), "bios_date": bios.get("ReleaseDate"), "serial": bios.get("SerialNumber"), "motherboard": board, "os": os_info.get("Caption") or platform.platform(), "os_version": os_info.get("Version"), "build": os_info.get("BuildNumber"), "architecture": os_info.get("OSArchitecture") or platform.machine(), "secure_boot": secure_boot if isinstance(secure_boot, bool) else None, "tpm": tpm, "hostname": computer.get("Name") or socket.gethostname(), "uptime_seconds": max(0, time.time() - psutil.boot_time())}
 
 
 def collect_cpu() -> dict[str, Any]:
     """Collect CPU identity and current utilization."""
-    cpu = _one(powershell_json("Get-CimInstance Win32_Processor | Select -First 1 Name,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed | ConvertTo-Json -Compress"))
+    cpu = _one(powershell_json("Get-CimInstance Win32_Processor | Select -First 1 Name,Manufacturer,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed,CurrentClockSpeed | ConvertTo-Json -Compress"))
     frequency = psutil.cpu_freq()
-    return {"name": cpu.get("Name") or platform.processor() or "N/A", "physical_cores": cpu.get("NumberOfCores") or psutil.cpu_count(False), "logical_processors": cpu.get("NumberOfLogicalProcessors") or psutil.cpu_count(True), "max_mhz": cpu.get("MaxClockSpeed") or (frequency.max if frequency else None), "current_mhz": frequency.current if frequency else None, "utilization_pct": psutil.cpu_percent(interval=0.2)}
+    return {"name": cpu.get("Name") or platform.processor() or "N/A", "vendor": cpu.get("Manufacturer"), "physical_cores": cpu.get("NumberOfCores") or psutil.cpu_count(False), "logical_processors": cpu.get("NumberOfLogicalProcessors") or psutil.cpu_count(True), "max_mhz": cpu.get("MaxClockSpeed") or (frequency.max if frequency else None), "current_mhz": cpu.get("CurrentClockSpeed") or (frequency.current if frequency else None), "utilization_pct": psutil.cpu_percent(interval=0.2)}
 
 
 def collect_ram() -> dict[str, Any]:

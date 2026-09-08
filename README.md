@@ -26,6 +26,10 @@ Portable Windows diagnostic toolkit for checking a laptop before purchase. Desig
 - Overall score + issues/warnings
 - HTML and JSON report export
 
+Seller specifications are optional. Load a data-only JSON profile in the GUI or pass `--profile path\to\seller.json` to the CLI; profiles never activate automatically based on brand or model. `MATCH`, `MISMATCH`, and `UNVERIFIED` evidence is shown in the report.
+
+Quick Test collects identity, CPU, RAM, GPU, storage, display, battery, and local network information. Complete Test adds bounded CPU and temporary storage benchmarks. Network reachability is optional and core diagnostics remain usable offline.
+
 ## Important limitations
 
 This is a **purchase-side sanity/verification tool**, not a laboratory benchmark. It does not replace 3DMark, HWInfo, CrystalDiskInfo or vendor diagnostics for formal testing. Temperature values are shown when Windows/NVIDIA telemetry exposes them; some laptops do not expose CPU temperature through built-in WMI.
@@ -34,23 +38,26 @@ The disk test creates and deletes a temporary 256 MB file. The GPU test does not
 
 ## Build locally
 
-Windows + Python 3.11+:
+Windows 10/11 + Python 3.11+ for source use:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-python app\laptop_diagnostic.py
+python app.py --quick
+python app.py --complete --profile profiles\generic.json
 ```
 
 Build EXE:
 
 ```powershell
 pip install pyinstaller
-pyinstaller --noconsole --onefile --name LaptopDiagnostic app\laptop_diagnostic.py
+pyinstaller --noconsole --onefile --name LaptopDiagnostic app.py
 ```
 
-The EXE will be created in `dist\LaptopDiagnostic.exe`.
+The EXE will be created in `dist\LaptopDiagnostic.exe` and can run without Python.
+
+Use `python app.py --profile profiles\generic.json --report` to compare a machine with an optional seller specification. Use `--complete` for the bounded CPU and storage benchmarks. Hardware checks remain best-effort: unavailable Windows sensors are reported as unavailable, not guessed.
 
 ## GitHub Actions
 
