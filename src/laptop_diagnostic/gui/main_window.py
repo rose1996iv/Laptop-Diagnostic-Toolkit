@@ -1,16 +1,10 @@
 """Responsive PySide6 dashboard with a worker-thread scan."""
 from __future__ import annotations
-import json
+
 import sys
-from datetime import datetime
 from pathlib import Path
-from . import __name__ as _gui_package
-from ..collectors.battery import collect_battery
-from ..collectors.display import collect_display
-from ..collectors.gpu import collect_gpus, nvidia_telemetry
-from ..collectors.storage import collect_storage
-from ..collectors.system import collect_cpu, collect_ram, collect_system
-from ..core.models import DiagnosticReport, ExpectedProfile
+
+from ..core.models import ExpectedProfile
 from ..main import diagnostic_report
 from ..profiles.loader import ProfileError, load_profile
 from ..reporting.html_report import write_html_report
@@ -18,8 +12,20 @@ from ..reporting.json_report import write_json_report
 from ..version import __version__
 
 try:
-    from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
-    from PySide6.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QLabel, QMainWindow, QPushButton, QProgressBar, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
+    from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, Signal, Slot
+    from PySide6.QtWidgets import (
+        QApplication,
+        QFileDialog,
+        QHBoxLayout,
+        QLabel,
+        QMainWindow,
+        QProgressBar,
+        QPushButton,
+        QTableWidget,
+        QTableWidgetItem,
+        QVBoxLayout,
+        QWidget,
+    )
 except ImportError as exc:
     raise RuntimeError("Install requirements.txt to use the desktop GUI.") from exc
 
@@ -39,7 +45,8 @@ class ScanWorker(QRunnable):
             report = diagnostic_report(self.profile, complete=self.complete_mode)
             self.signals.progress.emit(100, "Complete")
             self.signals.complete.emit(report)
-        except Exception as exc: self.signals.failed.emit(str(exc))
+        except Exception as exc:  # noqa: BLE001 - surface collector failures in the GUI
+            self.signals.failed.emit(str(exc))
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -51,6 +58,10 @@ class MainWindow(QMainWindow):
         actions = QHBoxLayout(); self.run_button = QPushButton("RUN COMPLETE TEST"); self.run_button.clicked.connect(lambda: self.start_scan(True)); actions.addWidget(self.run_button); quick = QPushButton("Quick Scan"); quick.clicked.connect(lambda: self.start_scan(False)); actions.addWidget(quick); profile_button = QPushButton("Load Seller Profile"); profile_button.clicked.connect(self.load_profile); actions.addWidget(profile_button); self.json_button = QPushButton("Export JSON"); self.json_button.clicked.connect(self.export_json); self.json_button.setEnabled(False); actions.addWidget(self.json_button); self.html_button = QPushButton("Export HTML"); self.html_button.clicked.connect(self.export_html); self.html_button.setEnabled(False); actions.addWidget(self.html_button); layout.addLayout(actions)
         self.progress = QProgressBar(); layout.addWidget(self.progress); self.status = QLabel("Ready. Diagnostics are read-only; benchmark actions are bounded."); layout.addWidget(self.status)
         self.table = QTableWidget(0, 3); self.table.setHorizontalHeaderLabels(["Check", "Status", "Summary"]); self.table.horizontalHeader().setStretchLastSection(True); layout.addWidget(self.table)
+        footer = QLabel("Code & Designed by Joseph (PhD Scholar)")
+        footer.setStyleSheet("color:#667085;padding:6px;font-size:11px")
+        footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(footer)
 
     def start_scan(self, complete: bool):
         self.run_button.setEnabled(False); worker = ScanWorker(complete, self.profile); worker.signals.progress.connect(lambda value, label: (self.progress.setValue(value), self.status.setText(label))); worker.signals.complete.connect(self.scan_complete); worker.signals.failed.connect(self.scan_failed); self.pool.start(worker)

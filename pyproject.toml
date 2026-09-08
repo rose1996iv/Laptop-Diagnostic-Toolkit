@@ -6,6 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "laptop-diagnostic-toolkit"
 version = "1.0.0"
 description = "Offline-first Windows laptop diagnostic toolkit"
+authors = [{name = "Joseph"}]
+urls = {Repository = "https://github.com/rose1996iv/Laptop-Diagnostic-Toolkit"}
 requires-python = ">=3.11"
 dependencies = ["PySide6>=6.7,<7", "psutil>=6.0,<8"]
 
