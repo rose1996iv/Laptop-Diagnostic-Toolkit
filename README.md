@@ -52,7 +52,7 @@ Build EXE:
 
 ```powershell
 pip install pyinstaller
-pyinstaller --noconsole --onefile --name LaptopDiagnostic app.py
+pyinstaller --noconsole --onefile --paths src --name LaptopDiagnostic app.py
 ```
 
 The EXE will be created in `dist\LaptopDiagnostic.exe` and can run without Python.
