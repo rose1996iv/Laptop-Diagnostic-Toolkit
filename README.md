@@ -9,7 +9,7 @@ Portable Windows diagnostic toolkit for checking a laptop before purchase. Desig
 3. Click **RUN COMPLETE TEST**.
 4. Let it finish (typically 2–4 minutes depending on the SSD and GPU/D3D test).
 5. Save both **HTML** and **JSON** reports.
-6. For a gaming/CAD laptop, confirm that the exact NVIDIA GPU and VRAM match the listing.
+6. Compare the detected hardware with the seller's specification for the laptop being tested.
 
 ## Tests included
 

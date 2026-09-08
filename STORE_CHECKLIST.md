@@ -4,20 +4,20 @@
 
 - [ ] Exact model/SKU on box matches listing
 - [ ] CPU exact model
-- [ ] RAM 16 GB (or expected configuration)
-- [ ] SSD 512 GB (or expected configuration)
-- [ ] NVIDIA GeForce RTX 3050 **6 GB** (for the ALG configuration being considered)
-- [ ] Display 1920×1080 @ **144 Hz**
-- [ ] Official Acer warranty and GST invoice
+- [ ] RAM capacity matches the seller's specification
+- [ ] SSD capacity and type match the seller's specification
+- [ ] GPU model and dedicated VRAM match the seller's specification, if applicable
+- [ ] Display resolution and refresh rate match the seller's specification
+- [ ] Manufacturer warranty and purchase invoice are provided
 
 ## Complete toolkit test
 
 1. Run **RUN COMPLETE TEST**.
-2. Watch GPU info: make sure the NVIDIA GPU appears separately from Intel Graphics.
-3. Confirm VRAM is **6 GB** for the ALG configuration you intend to buy.
-4. Let the D3D/NVIDIA validation finish.
-5. Look at maximum NVIDIA GPU temperature and utilization.
-6. Run the display check at 144 Hz.
+2. Confirm the detected manufacturer and model match the advertised laptop.
+3. Compare CPU, RAM, storage, GPU/VRAM, display, and battery results with the advertised specification.
+4. Confirm any dedicated GPU appears separately from integrated graphics.
+5. Let the D3D/GPU validation finish when the laptop supports it.
+6. Review maximum GPU temperature and utilization when telemetry is available.
 7. Save the HTML report.
 
 ## Manual physical checks

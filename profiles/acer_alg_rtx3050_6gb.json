@@ -1,0 +1,12 @@
+{
+  "name": "Acer ALG RTX 3050 6GB",
+  "manufacturer": "Acer",
+  "model_contains": "ALG",
+  "cpu_contains_any": ["210H"],
+  "ram_gb_min": 16,
+  "gpu_contains_any": ["RTX 3050"],
+  "gpu_vram_gb_min": 6,
+  "storage_gb_min": 512,
+  "display_resolution": "1920x1080",
+  "refresh_rate_hz_min": 144
+}
