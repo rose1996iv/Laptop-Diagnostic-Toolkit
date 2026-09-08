@@ -1,0 +1,26 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build executable
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip pyinstaller
+          pyinstaller --noconsole --onefile --name LaptopDiagnostic app/laptop_diagnostic.py
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LaptopDiagnostic-Windows
+          path: dist/LaptopDiagnostic.exe
